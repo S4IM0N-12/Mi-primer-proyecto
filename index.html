@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Mi primer frontend con FastAPI</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #121212; color: #fff; } 
+        .card { background: #1e1e1e; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
+        input, button { padding: 8px; margin-right: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Mis tareas</h1>
+    <div class="card">
+        <h3>Crear nueva tarea</h3>
+        <input type="text" id="titulo" placeholder="titulo de la tarea">
+        <input type="text" id="descripcion" placeholder="descripcion">
+        <button onclick="crearTarea()">Guardar</button>
+    </div>
+    <div class="card">
+        <h3>Lista de tareas</h3>
+        <ul id="Lista-tareas"></ul>
+    </div>
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+        async function obtenerTareas() {
+            try {
+                let respuesta = await fetch(`${API_URL}/tareas`);
+                let datos = await respuesta.json();
+                let lista = document.getElementById("Lista-tareas")
+                lista.innerHTML = "";
+                datos.tareas.forEach(t => {
+                    let li = document.createElement("li");
+                    li.innerHTML = `<strong>${t.titulo}</strong>: ${t.descripcion}`;
+                    lista.appendChild(li);
+                });
+            } catch(error) {
+                console.error("Error al conectar con la API", error);
+            }
+        }
+        async function crearTarea() {
+            let titulo = document.getElementById("titulo").value;
+            let descripcion = document.getElementById("descripcion").value;
+            if (!titulo || !descripcion) {
+                alert("Llena todo los campos");
+                return;
+            }
+            await fetch(`${API_URL}/tareas`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    titulo: titulo, 
+                    descripcion: descripcion 
+                })
+            });
+            document.getElementById("titulo").value="";
+            document.getElementById("descripcion").value="";
+            obtenerTareas();
+        }
+        obtenerTareas();
+    </script>
+</body>
+</html>
